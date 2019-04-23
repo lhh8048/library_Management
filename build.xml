@@ -3,7 +3,8 @@
               Any modifications will be overwritten.
               To include a user specific buildfile here, simply create one in the same
               directory with the processing instruction <?eclipse.ant.import?>
-              as the first entry and export the buildfile again. --><project basedir="." default="build" name="Library_Management">
+              as the first entry and export the buildfile again. --><project basedir="." default="build" name="Library_Management" 
+              	xmlns:jacoco="antlib:org.jacoco.ant">
     <property environment="env"/>
     <property name="junit.output.dir" value="junit"/>
     <property name="debuglevel" value="source,lines,vars"/>
@@ -45,12 +46,32 @@
     <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
     <target name="BookManagementTest">
         <mkdir dir="${junit.output.dir}"/>
-        <junit fork="yes" printsummary="withOutAndErr">
-            <formatter type="xml"/>
-            <test name="BookManagementTest" todir="${junit.output.dir}"/>
-            <jvmarg line="-ea"/>
-            <classpath refid="Library_Management.classpath"/>
-        </junit>
+        <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
+        	<classpath path="../jacocoant.jar"/>
+        </taskdef>
+    	<jacoco:coverage>
+	       <junit fork="yes" printsummary="withOutAndErr">
+	            <formatter type="xml"/>
+	            <test name="BookManagementTest" todir="${junit.output.dir}"/>
+	            <jvmarg line="-ea"/>
+	            <classpath refid="Library_Management.classpath"/>
+	        </junit>
+        </jacoco:coverage>
+    	<jacoco:report>
+    	    <executiondata>
+    	        <file file="jacoco.exec"/>
+    	    </executiondata>
+
+    	    <structure name="java coverage">
+    	        <classfiles>
+    	              <fileset dir="bin"/>
+    	        </classfiles>
+    	        <sourcefiles encoding="UTF-8">
+    	              <fileset dir="src"/>
+    	        </sourcefiles>
+    	    </structure>
+    	    <html destdir="${junit.output.dir}/coverage-report"/>
+    	</jacoco:report>
     </target>
     <target name="junitreport">
         <junitreport todir="${junit.output.dir}">
